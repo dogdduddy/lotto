@@ -64,23 +64,34 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
     }
 
     /**
-     * 기본 패턴 검사
-     * 1. 모서리 패턴 포함 필터
-     * 2. 삼각 패턴 포함 제거 필터
-     * 3. 개구리 패턴 포함 제거 필터
+     * 전체 패턴 검사 필터
      */
 
-    fun filterBasicPattern(list: List<LottoResult>): List<LottoResult> {
+    fun filterAllPattern(list: List<LottoResult>): List<LottoResult> {
         return list.filterNotCornerPattern()
+            .filterTotalSection()
+            .filterAcCalc()
+            .filterOddOrEvenBias()
+            .filterRatioOfHighAndLow()
+            .filterFinalNumber()
+            .filterTotalFinalNumber()
+            .filterDiscontinuousOrTwo()
+            .filterDecimalCount()
+            .filterCompositeNumber()
+            .filterPerfectSquare()
+            .filterMultiple()
+            .filterDual()
+            .filterRange()
+            .filterFiveSection()
+            .filterNotCornerPattern()
             .filterTriangle()
             .filterFrogPattern()
     }
 
     /**
-     * 총합구간 설정
-     *
+     * 1. 총합구간 설정
+     *   확률 77%
      * - 100 ~ 175
-     * 확률 77%
      */
     object TotalSection {
         const val MIN_COUNT = 100
@@ -96,9 +107,9 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
     }
 
     /**
-     * AC Calc Pattern
+     * 2. AC Calc Pattern
+     *    확률 84%
      * - 7이상인 경우 사용
-     * 확률 84%
      */
     object AC {
         const val AC_MAX_COUNT = 7
@@ -132,11 +143,10 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
     }
 
     /**
-     * 홀수 또는 짝수 편향
-     *
+     * 3. 홀수 또는 짝수 편향
+     *   확률 97%
      * - 홀수
      * - 짝수
-     *  확률 97%
      */
 
     fun getOddOrEvenBias(list: List<LottoResult>) = list.filterOddOrEvenBias()
@@ -149,12 +159,11 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
     }
 
     /**
-     * 고저 비율
-     *
+     * 4. 고저 비율
+     *   확률 97%
      * - 고저비율 6:0, 0:6 제외
      * - 조합번호 6개중 23을 기준으로 23미만 (1~22) 저비율, 23이상(23~45) 고비율이라고 합니다.
      * - 조합번호를 모두 '고' 혹은 '저' 비율로 조합하는 경우, 역대 1등 당첨번호 통계상 나올 확률이 3% 미만이기에 조합을 모두 '고' 혹은 '저' 비율로 선택하는 것은 추천하지 않습니다.
-     *  확률 97%
      */
 
     object HighAndLow {
@@ -171,20 +180,19 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
     }
 
     /**
-     * 동일 끝수 포함
-     *
+     * 5. 동일 끝수 포함
+     *   확률 99.5%
      * - 동일 끝수 0 ~ 3개 포함
      * - 끝수란 끝자리수를 말하며 당첨번호를 십자리와 단자리로 나눈후 단자리에 해당하는 숫자를 끝수라고 부릅니다. (예:42인경우 끝자리수는 2)
      * - 끝수가 같은 번호들은 동일 끝수라고 표현합니다.
      * - 역대 1등 당첨번호 통계상 같은 끝수가 4개이상 나올 확률은 1% 미만이기에 같은 끝수를 4개이상 조합번호를 만든 것은 추천하지 않습니다.
-     * 확률 99.5%
      */
 
     object FinalNumber {
         const val MIN_COUNT = 0
         const val MAX_COUNT = 3
 
-        const val TOTAL_MIN_COUNT = 15
+        const val TOTAL_MIN_COUNT = 14
         const val TOTAL_MAX_COUNT = 38
     }
 
@@ -205,8 +213,9 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
     }
 
     /**
-     * 끝수 총합
-     * - 끝수 총합 범위 :  15 ~ 38 구간
+     * 6. 끝수 총합
+     *   확률 95%
+     * - 끝수 총합 범위 :  14 ~ 38 구간
      * - 끝수란 조합번호의 끝자리수를 말합니다. 예를 들어 로또번호 42인경우 2가 끝수에 해당하며, 단 자리수(1~9)인 경우는 자신수가 끝수에 해당합니다.
      * - 끝수 총합구간은 로또분석가들이 생각하는 범위는 14~38이며, 역대 1등 당첨번호에 끝수 합을 보았을때 15~35구간이 나오는 확률이 90%이기에 로또타파에서는 15~38구간을 추천합니다.
      */
@@ -221,7 +230,204 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
     }
 
     /**
-     * 모서리 패턴
+     * 7. 연속번호 없음 및 2연속번호 적용
+     *   확률 98.5%
+     * - 연속번호란 로또 당첨번호 숫자중 1,2,3 이런식으로 연속적으로 등장하는 번호는 연속번호라고 합니다.
+     * 역대 1등 당첨번호 통계를 보변 연속번호가 없거나, 2연번이 나오는 확률이 90% 이상이기에 로또타파에서는 연번이 없거나 2연번이 존재하는 조합을 추천합니다.
+     */
+
+    fun getDiscontinuousOrTwo(list: List<LottoResult>) = list.filterDiscontinuousOrTwo()
+
+    private fun List<LottoResult>.filterDiscontinuousOrTwo(): List<LottoResult> {
+        return this.filter {
+            val count = getMaxConsecutive(it)
+            count == 0 || count == 1
+        }
+    }
+
+    private fun getMaxConsecutive(lotto: LottoResult): Int {
+        var max = 0
+        var previous = -1
+
+        lotto.numbers.forEach {
+            if (it == previous + 1) max++
+            else max = 0
+            previous = it
+        }
+
+        return max
+    }
+
+    /**
+     * 8. 소수 0 ~ 3개 포함
+     *    확률 94%
+     * 45개 로또번호중 소수에 해당하는 수는 2,3,5,7,11,13,17,19,23,29,31,37,41,43 이며 총 14개수입니다.
+     * 조합번호중 소수를 4개이상 포함하는 경우, 역대 1등 당첨번호 통계상 나올 확률은 1%미만이기에 추천하지 않습니다.
+     */
+    object Decimal {
+        const val MAX_COUNT = 3
+    }
+
+    val decimal = listOf(2,3,5,7,11,13,17,19,23,29,31,37,41,43)
+
+    fun getDecimalCount(list: List<LottoResult>) = list.filterDecimalCount()
+
+    private fun List<LottoResult>.filterDecimalCount(): List<LottoResult> {
+        return this.filter {
+            it.numbers.count { n -> n in decimal } <= Decimal.MAX_COUNT
+        }
+    }
+
+    /**
+     * 9. 합성수 0 ~ 3개 포함
+     *    확률 88%
+     * 합성수란 소수와 3의 배수를 제외한 숫자를 말합니다.
+     * 45개 로또번호중 합성수는 1,4,8,10,14,16,20,22,25,26,28,32,34,35,38,40,44 이며 총 17개수입니다.
+     */
+
+    object CompositeNumber {
+        const val MAX_COUNT = 3
+    }
+
+    val compositeNumber = listOf(1,4,8,10,14,16,20,22,25,26,28,32,34,35,38,40,44)
+
+    fun getCompositeNumber(list: List<LottoResult>) = list.filterCompositeNumber()
+
+    private fun List<LottoResult>.filterCompositeNumber(): List<LottoResult> {
+        return this.filter {
+            it.numbers.count { n -> n in compositeNumber } <= CompositeNumber.MAX_COUNT
+        }
+    }
+
+    /**
+     * 10. 완전제곱수 0 ~ 2개 포함
+     *   확률 97%
+     * 완전제곱수란 자기자신를 곱한 수를 말합니다.
+     * 45개 로또번호중 완전 제곱수는 1,4,9,16,25,36 이며 총 6개수입니다.
+     */
+
+    object PerfectSquare  {
+        const val MAX_COUNT = 2
+    }
+
+    val perfectSquare = listOf(1,4,9,16,25,36)
+
+    fun getPerfectSquare(list: List<LottoResult>) = list.filterPerfectSquare()
+
+    private fun List<LottoResult>.filterPerfectSquare(): List<LottoResult> {
+        return this.filter {
+            it.numbers.count { n -> n in perfectSquare } <= PerfectSquare.MAX_COUNT
+        }
+    }
+
+    /**
+     * 11. 3, 5의 배수
+     *   확률 84%
+     * 배수란 로또번호 45개중 3과 5의 배수를 말합니다.
+     * 3의 배수는 3,6,9,12,15,18,21,24,27,30,33,36,39,42,45 총 15개수가 존재하며, 5의 배수는 5,10,15,25,30,35,40,45 총 9개가 존재합니다.
+     * 로또 조합시 3의 배수는 0개 ~ 3개까지 포함, 5의 배수는 0개 ~ 2개까지만 포함하는 것을 추천합니다.
+     */
+
+    object Multiple {
+        const val THREE = 3
+        const val FIVE = 5
+
+        const val THREE_MAX_COUNT = 3
+        const val FIVE_MAX_COUNT = 2
+    }
+
+    fun getMultiple(list: List<LottoResult>) = list.filterMultiple()
+
+    private fun List<LottoResult>.filterMultiple(): List<LottoResult> {
+        return this.filterMultipleThree().filterMultipleFive()
+    }
+
+    private fun List<LottoResult>.filterMultipleThree(): List<LottoResult> {
+        return this.filter {
+            it.numbers.count { n -> n % Multiple.THREE == 0 } <= Multiple.THREE_MAX_COUNT
+        }
+    }
+
+    private fun List<LottoResult>.filterMultipleFive(): List<LottoResult> {
+        return this.filter {
+            it.numbers.count { n -> n % Multiple.FIVE == 0 } <= Multiple.FIVE_MAX_COUNT
+        }
+    }
+
+
+    /**
+     * 12. 쌍수 0 ~ 2개 포함
+     *    확률 99%
+     * 쌍수란 로또번호중 앞뒤가 같은 수를 말하며, 쌍수에 해당하는 수는 11,22,33,44가 있습니다.
+     * 역대 로또 1등 당첨번호 통계상 쌍수가 3개 이상 나오는 경우 1% 미만이기에 로또번호 조합시 쌍수를 0개 ~ 2개까지만 포함하는것을 추천합니다.
+     */
+
+    object Dual {
+        const val MAX_COUNT = 2
+    }
+
+    val dual = listOf(11,22,33,44)
+
+    fun getDual(list: List<LottoResult>) = list.filterDual()
+
+    private fun List<LottoResult>.filterDual(): List<LottoResult> {
+        return this.filter {
+            it.numbers.count { n -> n in dual } <= Dual.MAX_COUNT
+        }
+    }
+
+    /**
+     * 13. 시작번호 14이상 끝번호 30이하 제외
+     *   확률 80%
+     */
+
+    object Range {
+        const val START_NUMBER = 14
+        const val END_NUMBER = 30
+    }
+
+    fun test(list: List<LottoResult>) = getRange(list).size / 1189.0
+
+    fun getRange(list: List<LottoResult>) = list.filterRange()
+
+    private fun List<LottoResult>.filterRange(): List<LottoResult> {
+        return this.filter {
+            it.number1 < Range.START_NUMBER
+                    && it.number6 > Range.END_NUMBER
+        }
+    }
+
+    /**
+     * 14. 동일구간 3개이상 제외
+     *   확률 94%
+     * 동일구간이란 45개 숫자를 10단위로 나누어 공색기준으로 보면 1~10, 11~20, 21~30, 31~40, 41~45 나눈 5구간을 말합니다.
+     * 역대 1등 로또 당첨번호중 동일구간에 4개이상 번호가 포함된 조합은 5%미만이기에 동일구간에 4개이상 번호를 포함하는것은 추천하지 않습니다.
+     */
+
+    object FiveSection {
+        const val MAX_COUNT = 4
+    }
+
+    val firstSection = (1..10)
+    val secondSection = (11..20)
+    val thirdSection = (21..30)
+    val fourthSection = (31..40)
+    val fifthSection = (41..45)
+
+    fun getFiveSection(list: List<LottoResult>) = list.filterFiveSection()
+
+    private fun List<LottoResult>.filterFiveSection(): List<LottoResult> {
+        return this.filter {
+            it.numbers.count { n -> n in firstSection } < FiveSection.MAX_COUNT
+                    && it.numbers.count { n -> n in secondSection } < FiveSection.MAX_COUNT
+                    && it.numbers.count { n -> n in thirdSection } < FiveSection.MAX_COUNT
+                    && it.numbers.count { n -> n in fourthSection } < FiveSection.MAX_COUNT
+                    && it.numbers.count { n -> n in fifthSection } < FiveSection.MAX_COUNT
+        }
+    }
+
+    /**
+     * 15. 모서리 패턴
      *
      * - 좌측상단 : 1,2,8,9
      * - 우측상단 : 6,7,13,14

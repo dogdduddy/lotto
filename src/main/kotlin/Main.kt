@@ -2,6 +2,7 @@ import analyzer.LottoDataAnalyzer
 import analyzer.LottoResultAnalyzer
 import analyzer.LottoResultCustomAnalyzer
 import manager.LottoDataManager
+import model.LottoResult
 
 
 //fun createLottoFile() {
@@ -21,10 +22,9 @@ fun main() {
     val dataManager = LottoDataManager()
     val resultAnalyzer = LottoResultAnalyzer()
     val dataAnalyzer = LottoDataAnalyzer()
-
 //     리소스에서 데이터 로드 (src/main/resources 폴더)
-     val lottoResults = dataManager.loadLottoResultsFromFile("/Users/jim/IdeaProjects/lotto_/src/main/kotlin/data/lotto_result.json")
-     val lottoData = dataManager.loadLottoDataFromFile("/Users/jim/IdeaProjects/lotto_/src/main/kotlin/data/lotto_data.json")
+     val lottoResults = dataManager.loadLottoResultsFromFile("/Users/jeonbyeongseon/IdeaProjects/lotto/src/main/kotlin/data/lotto_result.json")
+     val lottoData = dataManager.loadLottoDataFromFile("/Users/jeonbyeongseon/IdeaProjects/lotto/src/main/kotlin/data/lotto_data.json")
 
     val customAnalyzer = LottoResultCustomAnalyzer(lottoResults)
 
@@ -123,14 +123,31 @@ fun main() {
 //            println("${it.key}번 출현 횟수: ${it.value}회")
 //        }
 
-        // 2025.09.18
-//        val filteredLottoData = lottoData.take(lottoData.size)
+        // 2025.09.18 (번호별 나온 횟수, 그래프로 표시)
+//        val filteredLottoData = lottoData
 //        val frequency = dataAnalyzer.getNumberFrequency(filteredLottoData)
-//        println("${filteredLottoData.last().round}회 ~ ${filteredLottoData.first().round}회")
-//        frequency.toList().sortedWith(compareBy({it.second})).reversed()
-//            .forEach { (i, n) ->
-//                println("${if (i > 9) i else " $i"}번 출현 횟수: ${n}회")
+////        println("${filteredLottoData.last().round}회 ~ ${filteredLottoData.first().round}회")
+//
+//        val max = frequency.values.max()
+//        val unit = max / 20
+//
+//        val unitOfMap = mutableMapOf<Int, Int>()
+//
+//        frequency.forEach { (n, v) ->
+//            unitOfMap[n] = v / unit
+//        }
+//
+//        (1..45).forEach {
+//            print(if (it > 9) "$it " else " $it ")
+//        }
+//        println()
+//        for (i in 20 downTo 1) {
+//            unitOfMap.forEach { (n, v) ->
+//                print(if (v >= i) " * " else "   ")
 //            }
+//            println()
+//        }
+
 //
 //        val a = customAnalyzer.getCornerPattern()
 //        a.forEach {
@@ -142,8 +159,45 @@ fun main() {
 //            println("${cnt}개 등장 $${count}회")
 //        }
 
-        val result = customAnalyzer.getTotalFinalNumberPattern(lottoResults)
-        println(result.size)
 
+        val numberList = (listOf<Int>() + (1..45)).toTypedArray()
+        val list = combination(numberList, 6).map { it.toLottoResult() }
+        println(list.size)
+        val result = customAnalyzer.filterAllPattern(list)
+        println(result.size)
     }
+}
+
+fun List<Int>.toLottoResult(): LottoResult = LottoResult(
+    date = "",
+    round = 0,
+    number1 = this[0] ?: 0,
+    number2 = this[1] ?: 0,
+    number3 = this[2] ?: 0,
+    number4 = this[3] ?: 0,
+    number5 = this[4] ?: 0,
+    number6 = this[5] ?: 0,
+    bonus = 0,
+)
+
+fun <T> combination(elements: Array<T>, r: Int): List<List<T>> {
+    val n = elements.size
+    val results = mutableListOf<List<T>>() // 모든 경우의 수
+
+    val result = elements.sliceArray(0 until r)
+
+    fun recursionCombination(depth: Int = 0, index: Int = 0) {
+        if (depth == r) {
+            results.add(result.toList())
+            return
+        }
+
+        for (i in index until n) {
+            result[depth] = elements[i]
+            recursionCombination(depth + 1, i + 1)
+        }
+    }
+
+    recursionCombination()
+    return results
 }
