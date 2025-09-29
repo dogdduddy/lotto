@@ -22,6 +22,11 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
         return list
     }
 
+    // 특정 회차 데이터 가져오기
+    fun getLottoWithRound(round: Int): LottoResult? {
+        return data.firstOrNull { it.round == round }
+    }
+
     // 특정 회차 범위의 데이터 가져오기
     fun getRoundRange(startRound: Int, endRound: Int): List<LottoResult> {
         return data.filter { it.round in startRound..endRound }
@@ -66,7 +71,6 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
     /**
      * 전체 패턴 검사 필터
      */
-
     fun filterAllPattern(list: List<LottoResult>): List<LottoResult> {
         return list.filterNotCornerPattern()
             .filterTotalSection()
@@ -536,5 +540,35 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
         return this.filter {
             !it.numbers.all { n -> n in leftAlignFrog } && !it.numbers.all { n -> n in rightAlignFrog }
         }
+    }
+
+    /**
+     * 특정 회차에 일치하는 패턴 출력
+     */
+    fun validationPatternOfRound(lotto: LottoResult) {
+        val list = listOf(lotto)
+        val inconsistentPatternList = mutableListOf<String>()
+
+        if (list.filterTotalSection().isEmpty()) inconsistentPatternList.add("총합구간")
+        if (list.filterAcCalc().isEmpty()) inconsistentPatternList.add("AC")
+        if (list.filterOddOrEvenBias().isEmpty()) inconsistentPatternList.add("홀수")
+        if (list.filterRatioOfHighAndLow().isEmpty()) inconsistentPatternList.add("고저")
+        if (list.filterFinalNumber().isEmpty()) inconsistentPatternList.add("동일 끝수")
+        if (list.filterTotalFinalNumber().isEmpty()) inconsistentPatternList.add("끝수 총합")
+        if (list.filterDiscontinuousOrTwo().isEmpty()) inconsistentPatternList.add("연속번호")
+        if (list.filterDecimalCount().isEmpty()) inconsistentPatternList.add("소수")
+        if (list.filterCompositeNumber().isEmpty()) inconsistentPatternList.add("합성수")
+        if (list.filterPerfectSquare().isEmpty()) inconsistentPatternList.add("완전제곱수")
+        if (list.filterMultiple().isEmpty()) inconsistentPatternList.add("3|5 배수")
+        if (list.filterDual().isEmpty()) inconsistentPatternList.add("쌍수")
+        if (list.filterRange().isEmpty()) inconsistentPatternList.add("시작끝번호")
+        if (list.filterFiveSection().isEmpty()) inconsistentPatternList.add("동일 구간")
+        if (list.filterNotCornerPattern().isEmpty()) inconsistentPatternList.add("모서리")
+        if (list.filterTriangle().isEmpty()) inconsistentPatternList.add("삼각")
+        if (list.filterFrogPattern().isEmpty()) inconsistentPatternList.add("개구리")
+
+        println("${lotto.round}회 필터 비일치 개수 : ${inconsistentPatternList.size}")
+        if (inconsistentPatternList.isNotEmpty())
+            println(inconsistentPatternList.joinToString(", "))
     }
 }

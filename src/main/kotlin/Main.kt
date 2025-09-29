@@ -23,13 +23,11 @@ fun main() {
     val resultAnalyzer = LottoResultAnalyzer()
     val dataAnalyzer = LottoDataAnalyzer()
 //     리소스에서 데이터 로드 (src/main/resources 폴더)
-     val lottoResults = dataManager.loadLottoResultsFromFile("/Users/jeonbyeongseon/IdeaProjects/lotto/src/main/kotlin/data/lotto_result.json")
-     val lottoData = dataManager.loadLottoDataFromFile("/Users/jeonbyeongseon/IdeaProjects/lotto/src/main/kotlin/data/lotto_data.json")
+     val lottoResults = dataManager.loadLottoResultsFromFile("/Users/jim/IdeaProjects/lotto_/src/main/kotlin/data/lotto_result.json")
+     val lottoData = dataManager.loadLottoDataFromFile("/Users/jim/IdeaProjects/lotto_/src/main/kotlin/data/lotto_data.json")
 
     val customAnalyzer = LottoResultCustomAnalyzer(lottoResults)
 
-    if (lottoResults.isNotEmpty()) {
-        println("=== LottoResult 사용 예시 ===")
 //
 //        val selectedMoth = 9
 //        // 모든 회차 중 월 데이터
@@ -99,11 +97,8 @@ fun main() {
 //        }
 
 
-    }
-
-    if (lottoData.isNotEmpty()) {
-        println("\n=== LottoData 사용 예시 ===")
-
+    if (lottoResults.isNotEmpty()) {
+        println("=== LottoResult 사용 예시 ===")
         // 최근 10회차
 //        val recent10 = dataAnalyzer.getRecentRounds(lottoData, 11).subList(1, 11)
 //        println("최근 10회차: ${recent10.map { "${it.round}회" }}")
@@ -159,12 +154,14 @@ fun main() {
 //            println("${cnt}개 등장 $${count}회")
 //        }
 
+        val lottoList = customAnalyzer.getRoundRange(1180, 1189)
+        lottoList.forEach { customAnalyzer.validationPatternOfRound(it) }
 
-        val numberList = (listOf<Int>() + (1..45)).toTypedArray()
-        val list = combination(numberList, 6).map { it.toLottoResult() }
-        println(list.size)
-        val result = customAnalyzer.filterAllPattern(list)
-        println(result.size)
+//        val numberList = (listOf<Int>() + (1..45)).toTypedArray()
+//        val list = combination(numberList, 6).map { it.toLottoResult() }
+//        println(list.size)
+//        val result = customAnalyzer.filterAllPattern(list)
+//        println(result.size)
     }
 }
 
