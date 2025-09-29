@@ -176,7 +176,7 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
 
     fun getRatioOfHighAndLow(list: List<LottoResult>) = list.filterRatioOfHighAndLow()
 
-    private fun List<LottoResult>.filterRatioOfHighAndLow(): List<LottoResult> {
+    fun List<LottoResult>.filterRatioOfHighAndLow(): List<LottoResult> {
         return this.filter {
             !it.numbers.all { n -> n < HighAndLow.BOUNDARY }
                     && !it.numbers.all { n -> n >= HighAndLow.BOUNDARY }
@@ -202,7 +202,7 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
 
     fun getFinalNumberPattern(list: List<LottoResult>) = list.filterFinalNumber()
 
-    private fun List<LottoResult>.filterFinalNumber(): List<LottoResult> {
+    fun List<LottoResult>.filterFinalNumber(): List<LottoResult> {
         return this.filter {
             val map = mutableMapOf<Int, Int>()
             it.numbers.forEach { n -> map[n.getFinalNumber()] = map.getOrDefault(n.getFinalNumber(), 0) + 1 }
@@ -226,7 +226,7 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
 
     fun getTotalFinalNumberPattern(list: List<LottoResult>) = list.filterTotalFinalNumber()
 
-    private fun List<LottoResult>.filterTotalFinalNumber(): List<LottoResult> {
+    fun List<LottoResult>.filterTotalFinalNumber(): List<LottoResult> {
         return this.filter {
             val sum = it.numbers.sumOf { n -> n % 10  }
             sum >= FinalNumber.TOTAL_MIN_COUNT && sum <= FinalNumber.TOTAL_MAX_COUNT
@@ -242,7 +242,7 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
 
     fun getDiscontinuousOrTwo(list: List<LottoResult>) = list.filterDiscontinuousOrTwo()
 
-    private fun List<LottoResult>.filterDiscontinuousOrTwo(): List<LottoResult> {
+    fun List<LottoResult>.filterDiscontinuousOrTwo(): List<LottoResult> {
         return this.filter {
             val count = getMaxConsecutive(it)
             count == 0 || count == 1
@@ -276,7 +276,7 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
 
     fun getDecimalCount(list: List<LottoResult>) = list.filterDecimalCount()
 
-    private fun List<LottoResult>.filterDecimalCount(): List<LottoResult> {
+    fun List<LottoResult>.filterDecimalCount(): List<LottoResult> {
         return this.filter {
             it.numbers.count { n -> n in decimal } <= Decimal.MAX_COUNT
         }
@@ -297,7 +297,7 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
 
     fun getCompositeNumber(list: List<LottoResult>) = list.filterCompositeNumber()
 
-    private fun List<LottoResult>.filterCompositeNumber(): List<LottoResult> {
+    fun List<LottoResult>.filterCompositeNumber(): List<LottoResult> {
         return this.filter {
             it.numbers.count { n -> n in compositeNumber } <= CompositeNumber.MAX_COUNT
         }
@@ -318,7 +318,7 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
 
     fun getPerfectSquare(list: List<LottoResult>) = list.filterPerfectSquare()
 
-    private fun List<LottoResult>.filterPerfectSquare(): List<LottoResult> {
+    fun List<LottoResult>.filterPerfectSquare(): List<LottoResult> {
         return this.filter {
             it.numbers.count { n -> n in perfectSquare } <= PerfectSquare.MAX_COUNT
         }
@@ -342,7 +342,7 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
 
     fun getMultiple(list: List<LottoResult>) = list.filterMultiple()
 
-    private fun List<LottoResult>.filterMultiple(): List<LottoResult> {
+    fun List<LottoResult>.filterMultiple(): List<LottoResult> {
         return this.filterMultipleThree().filterMultipleFive()
     }
 
@@ -374,7 +374,7 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
 
     fun getDual(list: List<LottoResult>) = list.filterDual()
 
-    private fun List<LottoResult>.filterDual(): List<LottoResult> {
+    fun List<LottoResult>.filterDual(): List<LottoResult> {
         return this.filter {
             it.numbers.count { n -> n in dual } <= Dual.MAX_COUNT
         }
@@ -394,7 +394,7 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
 
     fun getRange(list: List<LottoResult>) = list.filterRange()
 
-    private fun List<LottoResult>.filterRange(): List<LottoResult> {
+    fun List<LottoResult>.filterRange(): List<LottoResult> {
         return this.filter {
             it.number1 < Range.START_NUMBER
                     && it.number6 > Range.END_NUMBER
@@ -420,7 +420,7 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
 
     fun getFiveSection(list: List<LottoResult>) = list.filterFiveSection()
 
-    private fun List<LottoResult>.filterFiveSection(): List<LottoResult> {
+    fun List<LottoResult>.filterFiveSection(): List<LottoResult> {
         return this.filter {
             it.numbers.count { n -> n in firstSection } < FiveSection.MAX_COUNT
                     && it.numbers.count { n -> n in secondSection } < FiveSection.MAX_COUNT
@@ -466,7 +466,7 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
     /**
      * 모서리 패턴에 부합하지 않는 데이터 필터링
      */
-    private fun List<LottoResult>.filterNotCornerPattern(): List<LottoResult> {
+    fun List<LottoResult>.filterNotCornerPattern(): List<LottoResult> {
         return this.filter {
             val cnt = it.numbers.count { n -> n in (leftTopCorner + rightTopCorner + leftBottomCorner + rightBottomCorner) }
             cnt in Corner.MIN_COUNT..Corner.MAX_COUNT
@@ -506,7 +506,7 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
         return result
     }
 
-    private fun List<LottoResult>.filterTriangle(): List<LottoResult> {
+    fun List<LottoResult>.filterTriangle(): List<LottoResult> {
         return this.filter {
             !it.numbers.all { n -> n in leftTopTriangle }
                     && !it.numbers.all { n -> n in rightTopTriangle }
@@ -536,7 +536,7 @@ class LottoResultCustomAnalyzer(val data: List<LottoResult>) {
         return result
     }
 
-    private fun List<LottoResult>.filterFrogPattern(): List<LottoResult> {
+    fun List<LottoResult>.filterFrogPattern(): List<LottoResult> {
         return this.filter {
             !it.numbers.all { n -> n in leftAlignFrog } && !it.numbers.all { n -> n in rightAlignFrog }
         }

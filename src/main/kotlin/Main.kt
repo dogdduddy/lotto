@@ -1,8 +1,14 @@
 import analyzer.LottoDataAnalyzer
 import analyzer.LottoResultAnalyzer
 import analyzer.LottoResultCustomAnalyzer
+import analyzer.PatternReliabilityAnalyzer
+import filtering.ScoreBasedFilter
 import manager.LottoDataManager
 import model.LottoResult
+import scoring.LottoScoringSystem
+import trend.PatternTrendAnalyzer
+import kotlin.collections.component1
+import kotlin.collections.component2
 
 
 //fun createLottoFile() {
@@ -154,14 +160,81 @@ fun main() {
 //            println("${cnt}개 등장 $${count}회")
 //        }
 
-        val lottoList = customAnalyzer.getRoundRange(1180, 1189)
-        lottoList.forEach { customAnalyzer.validationPatternOfRound(it) }
+//        특정 회차 패턴 성공 여부 확인
+//        val lottoList = customAnalyzer.getRoundRange(1180, 1189)
+//        lottoList.forEach { customAnalyzer.validationPatternOfRound(it) }
+
 
 //        val numberList = (listOf<Int>() + (1..45)).toTypedArray()
 //        val list = combination(numberList, 6).map { it.toLottoResult() }
 //        println(list.size)
 //        val result = customAnalyzer.filterAllPattern(list)
 //        println(result.size)
+
+
+
+        val numberList = (listOf<Int>() + (1..45)).toTypedArray()
+//        val combinations = combination(numberList, 6).map { it.toLottoResult() }
+        val combinations = listOf(
+            LottoResult(
+                number1 = 1 ,
+                number2 = 6 ,
+                number3 = 8 ,
+                number4 = 25 ,
+                number5 = 38 ,
+                number6 = 43 ,
+                bonus = 25,
+                round = 1190,
+                date = ""
+            )
+        )
+
+        val reliabilityAnalyzer = PatternReliabilityAnalyzer(customAnalyzer)
+        val scoringSystem = LottoScoringSystem(customAnalyzer, reliabilityAnalyzer)
+        val trendAnalyzer = PatternTrendAnalyzer(customAnalyzer, reliabilityAnalyzer)
+        // 점수 계산
+        val lotto = customAnalyzer.getLottoWithRound(1188)
+        lotto?.let {
+
+            // 필터링
+            val filter = ScoreBasedFilter(scoringSystem)
+            // 최적 임계값 자동 계산해서 사용
+            val optimalThreshold = filter.getOptimalThreshold(combinations, lottoResults, 50)
+
+            // 맞춤 설정 필터링
+            val config = ScoreBasedFilter.FilterConfig(
+                minScore = 85.0,           // 최소 점수
+                maxResults = 50,           // 최대 결과 수
+                includeGrades = setOf("S+", "S", "A+", "A"),  // 포함할 등급
+                requirePatterns = setOf("홀짝비율(6:0제외)"),   // 필수 패턴
+                excludePatterns = setOf("시작끝번호규칙")        // 제외 패턴
+            )
+            val filterResult = filter.filterByScore(combinations, lottoResults, config)
+
+//            val score = scoringSystem.calculateScore(lotto, lottoResults)
+//            println("점수: ${score.score}, 등급: ${score.grade}\n")
+
+            println("   필터링 결과:")
+            println("   - 통과한 조합: ${filterResult.totalPassed}개")
+            println("   - 필터링 비율: ${String.format("%.2f", filterResult.filteringRate)}%\n")
+
+            println("5. 상위 5개 조합 출력")
+            filterResult.filteredScores.take(5).forEachIndexed { index, score ->
+                println("   ${index + 1}. [${score.numbers.joinToString(", ")}] - ${String.format("%.2f", score.score)}점 (${score.grade})")
+            }
+
+            println("\n6. 최근 트렌드 분석")
+            val trends = trendAnalyzer.analyzePatternTrends(lottoResults, recentCount = 50)
+            val topTrends = trends.entries
+                .sortedByDescending { Math.abs(it.value.trendValue) }
+                .take(3)
+
+            println("   주요 변화 패턴:")
+            topTrends.forEach { (name, trend) ->
+                val symbol = if (trend.trendValue > 0) "↑" else "↓"
+                println("   - $name: ${String.format("%+.2f", trend.trendValue)}% $symbol")
+            }
+        }
     }
 }
 
